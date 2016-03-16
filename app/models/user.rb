@@ -5,15 +5,10 @@ class User < ActiveRecord::Base
 
   enum role: [:user, :vip, :admin]
   after_initialize :set_default_role, :if => :new_record?
-  # TODO after_create :sign_up_for_mailing_list
 
   def set_default_role
     self.role ||= :user
   end
-
-  # def sign_up_for_mailing_list
-  #   MailingListSignupJob.perform_later(self)
-  # end
 
   def subscribe
     mailchimp = Gibbon::Request.new(api_key: Rails.application.secrets.mailchimp_api_key)

@@ -1,0 +1,13 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Platform:</strong>
+  <%= @bot.platform %>
+  <strong>Time Remaining:</strong>
+  <%= @bot.time_left %>
+  <strong>Status:</strong>
+  <%= @bot.status %>
+</p>
+
+<%= link_to 'Edit', edit_bot_path(@bot) %> |
+<%= link_to 'Back', bots_path %>

@@ -1,0 +1,8 @@
+<div class="authform col-xs-6">
+  <h3>Connect to Twitter</h3>
+  <%- if current_user.connected_to_twitter %>
+    <p>Connected to Twitter</p>
+  <% else %>
+    <%= button_to "Connect", connect_to_twitter_path(current_user), :class => 'button right' %>
+    <% end -%>
+</div>
