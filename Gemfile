@@ -9,6 +9,7 @@ gem 'jbuilder', '~> 2.0'
 gem 'stripe'
 gem 'oauth'
 gem 'twitter'
+gem "font-awesome-rails"
 
 group :development, :test do
   gem 'byebug'

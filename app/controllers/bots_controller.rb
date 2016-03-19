@@ -4,7 +4,7 @@ class BotsController < ApplicationController
   # GET /bots
   # GET /bots.json
   def index
-    @bots = Bot.all
+    @bots = Bot.where(user_id: current_user).order(created_at: :desc)
   end
 
   # GET /bots/1
@@ -14,7 +14,6 @@ class BotsController < ApplicationController
 
   # GET /bots/new
   def new
-    @bot = Bot.new
   end
 
   # GET /bots/1/edit
@@ -24,6 +23,7 @@ class BotsController < ApplicationController
   # POST /bots
   # POST /bots.json
   def create
+    bot_params['user_id'] = current_user
     @bot = Bot.new(bot_params)
 
     respond_to do |format|
@@ -65,11 +65,10 @@ class BotsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_bot
       @bot = Bot.find(params[:id])
-      @child_bots = @bot.twitter_bots
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def bot_params
-      params.require(:bot).permit(:status)
+      params.require(:bot).permit(:status, :platform).merge(user_id: current_user.id)
     end
 end

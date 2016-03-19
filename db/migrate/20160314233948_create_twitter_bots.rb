@@ -7,6 +7,7 @@ class CreateTwitterBots < ActiveRecord::Migration
       t.string :twitter_oauth_token_secret
       t.string :twitter_oauth_token_verifier
       t.text :twitter_oauth_authorize_url
+      t.boolean :connected
 
       t.timestamps null: false
     end

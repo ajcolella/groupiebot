@@ -11,18 +11,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160316020518) do
+ActiveRecord::Schema.define(version: 20160318201514) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "bots", force: :cascade do |t|
-    t.integer  "status"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "status",     default: 0
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
     t.string   "platform"
-    t.integer  "time_left"
+    t.integer  "time_left",  default: 0
+    t.integer  "user_id"
   end
+
+  add_index "bots", ["user_id"], name: "index_bots_on_user_id", using: :btree
 
   create_table "twitter_bots", force: :cascade do |t|
     t.integer  "twitter_id"
@@ -31,6 +34,7 @@ ActiveRecord::Schema.define(version: 20160316020518) do
     t.string   "twitter_oauth_token_secret"
     t.string   "twitter_oauth_token_verifier"
     t.text     "twitter_oauth_authorize_url"
+    t.boolean  "connected"
     t.datetime "created_at",                   null: false
     t.datetime "updated_at",                   null: false
     t.integer  "bot_id"
@@ -63,4 +67,5 @@ ActiveRecord::Schema.define(version: 20160316020518) do
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
+  add_foreign_key "bots", "users"
 end

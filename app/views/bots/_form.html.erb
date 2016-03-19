@@ -11,12 +11,15 @@
     </div>
   <% end %>
 
-  <div class="field platform-select">
+  <div class="field">
     <%= f.label :platform %><br>
-    <%= select(:bot, :platform, [['Twitter', 1], ['Instagram', 2]]) %>
+    <div class="select">
+      <%= select(:bot, :platform, [['Twitter'], ['Instagram']]) %>
+    </div>
   </div>
-  <%= render 'bots/twitter' %>
+  <br>
   <div class="actions">
-    <%= f.submit %>
+    <%= f.submit 'Create Bot', :class => "btn btn-default" %>
   </div>
+      
 <% end %>

@@ -8,13 +8,16 @@
     <%= javascript_include_tag 'application' %>
     <%= csrf_meta_tags %>
   </head>
-  <body>
-    <header>
-      <%= render 'layouts/navigation' %>
-    </header>
+  <body id="page-top" class="index">
+    <%= render 'layouts/navigation' %>
     <main role="main">
-       <%= render 'layouts/messages' %>
-       <%= yield %>
+      <br>
+       <section id="portfolio">
+        <div class="container">
+          <%= render 'layouts/messages' %>
+          <%= yield %>
+        </div>
+       </section>
     </main>
   </body>
 </html>
