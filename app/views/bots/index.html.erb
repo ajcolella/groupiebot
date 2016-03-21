@@ -31,9 +31,9 @@
     <% @bots.each do |bot| %>
       <tr>
         <td><%= bot.platform %></td>
-        <td>Fake user</td>
-        <td>123132</td>
-        <td>1232</td>
+        <td><%= bot.username %></td>
+        <td><%= bot.follower_count %></td>
+        <td><%= bot.following_count %></td>
         <td><%= bot.time_left %></td>
         <td><%= bot.status %></td>
         <td>

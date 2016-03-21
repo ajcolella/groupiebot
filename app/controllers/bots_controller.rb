@@ -5,6 +5,7 @@ class BotsController < ApplicationController
   # GET /bots.json
   def index
     @bots = Bot.where(user_id: current_user).order(created_at: :desc)
+    @bots.each { |b| b.update_bot_details }
   end
 
   # GET /bots/1
@@ -55,6 +56,7 @@ class BotsController < ApplicationController
   # DELETE /bots/1.json
   def destroy
     @bot.destroy
+    @child_bot.destroy
     respond_to do |format|
       format.html { redirect_to bots_url, notice: 'Bot was successfully destroyed.' }
       format.json { head :no_content }
@@ -65,6 +67,7 @@ class BotsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_bot
       @bot = Bot.find(params[:id])
+      @child_bot = eval("@bot.#{@bot.platform.downcase}_bot")
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.

@@ -1,5 +1,5 @@
 require 'rails_helper'
 
-RSpec.describe TwitterBot, type: :model do
+RSpec.describe TwitterClient, type: :model do
   pending "add some examples to (or delete) #{__FILE__}"
 end

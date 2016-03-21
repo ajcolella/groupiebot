@@ -6,6 +6,6 @@ Rails.application.routes.draw do
   devise_for :users
   resources :users
 
-  post 'bots/connect_to_twitter', to: 'twitter_bot#new', as: :connect_to_twitter
-  get '/callback/twitter/', to: "twitter_bot#callback", as: :twitter_callback
+  post 'bots/connect_to_twitter', to: 'twitter_client#new', as: :connect_to_twitter
+  get '/callback/twitter/', to: "twitter_client#callback", as: :twitter_callback
 end

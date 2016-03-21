@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160318201514) do
+ActiveRecord::Schema.define(version: 20160321133042) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,19 +28,32 @@ ActiveRecord::Schema.define(version: 20160318201514) do
   add_index "bots", ["user_id"], name: "index_bots_on_user_id", using: :btree
 
   create_table "twitter_bots", force: :cascade do |t|
-    t.integer  "twitter_id"
-    t.text     "twitter_stream_url"
+    t.text     "tags",              default: [],              array: true
+    t.boolean  "follow_back"
+    t.integer  "follow_method"
+    t.integer  "frequency"
+    t.integer  "bot_id"
+    t.integer  "twitter_client_id"
+    t.datetime "created_at",                     null: false
+    t.datetime "updated_at",                     null: false
+  end
+
+  create_table "twitter_clients", force: :cascade do |t|
+    t.integer  "twitter_id",                   limit: 8
     t.string   "twitter_oauth_token"
     t.string   "twitter_oauth_token_secret"
     t.string   "twitter_oauth_token_verifier"
     t.text     "twitter_oauth_authorize_url"
     t.boolean  "connected"
-    t.datetime "created_at",                   null: false
-    t.datetime "updated_at",                   null: false
-    t.integer  "bot_id"
+    t.datetime "created_at",                                          null: false
+    t.datetime "updated_at",                                          null: false
+    t.integer  "twitter_bot_id"
+    t.string   "username"
+    t.text     "followers",                              default: [],              array: true
+    t.text     "following",                              default: [],              array: true
   end
 
-  add_index "twitter_bots", ["bot_id"], name: "index_twitter_bots_on_bot_id", using: :btree
+  add_index "twitter_clients", ["twitter_bot_id"], name: "index_twitter_clients_on_twitter_bot_id", using: :btree
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false
