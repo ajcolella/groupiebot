@@ -4,6 +4,7 @@ class BotsController < ApplicationController
   # GET /bots
   # GET /bots.json
   def index
+    # Check rate limits here
     @bots = Bot.where(user_id: current_user).order(created_at: :desc)
     @bots.each { |b| b.update_bot_details }
   end
@@ -24,7 +25,7 @@ class BotsController < ApplicationController
   # POST /bots
   # POST /bots.json
   def create
-    bot_params['user_id'] = current_user
+    bot_params[:user_id] = current_user
     @bot = Bot.new(bot_params)
 
     respond_to do |format|

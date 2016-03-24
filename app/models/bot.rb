@@ -17,7 +17,7 @@ class Bot < ActiveRecord::Base
   end
 
   def update_bot_details
-    @child_client.update_bot_details
+    @child_client.update_bot_details(@child_bot.id)
   end
 
   private

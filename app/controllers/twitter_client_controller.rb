@@ -15,9 +15,8 @@ class TwitterClientController < ApplicationController
         # Establish the connection Bot --> Child Bot --> Client only after twitter validation
         parent_bot = Bot.create(platform: :twitter, user_id: current_user.id)
         child_bot = TwitterBot.create(bot_id: parent_bot.id)
-        client.update!(twitter_bot_id: child_bot.id)
         # Setup initial twitter account info
-        client.update_bot_details
+        client.update_bot_details(child_bot.id)
         redirect_to(edit_bot_path(parent_bot), :notice => 'Twitter bot activated!')
       else
         client.destroy

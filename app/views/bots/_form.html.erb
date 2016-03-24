@@ -10,16 +10,15 @@
       </ul>
     </div>
   <% end %>
-
+  <br>
   <div class="field">
-    <%= f.label :platform %><br>
-    <div class="select">
-      <%= select(:bot, :platform, [['Twitter'], ['Instagram']]) %>
-    </div>
+    <%= check_box_tag :follow_back, 0 %>
+    <%= label_tag(:follow_back, "Follow Back") %>
+    <%= fa_icon 'info-circle', data: {toggle: "tooltip", placement: "left" }, title: "Automatically follow users that follow you" %>
   </div>
   <br>
   <div class="actions">
-    <%= f.submit 'Create Bot', :class => "btn btn-default" %>
+    <%= f.submit 'Save Bot', :class => "btn btn-default" %>
   </div>
       
 <% end %>

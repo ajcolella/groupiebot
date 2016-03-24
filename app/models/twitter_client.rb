@@ -2,7 +2,8 @@ class TwitterClient < ActiveRecord::Base
   belongs_to :twitter_bot
   after_initialize :set_client, except: [:connected_to_twitter, :authorize_url, :validate_oauth_token]
 
-  def update_bot_details
+  def update_bot_details(twitter_bot_id)
+    self.twitter_bot_id = twitter_bot_id
     user = @client.user
     self.twitter_id = user.id
     self.username = user.screen_name

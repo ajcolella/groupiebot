@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160321133042) do
+ActiveRecord::Schema.define(version: 20160321222419) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,14 +28,14 @@ ActiveRecord::Schema.define(version: 20160321133042) do
   add_index "bots", ["user_id"], name: "index_bots_on_user_id", using: :btree
 
   create_table "twitter_bots", force: :cascade do |t|
-    t.text     "tags",              default: [],              array: true
-    t.boolean  "follow_back"
-    t.integer  "follow_method"
-    t.integer  "frequency"
+    t.text     "tags",              default: [],                 array: true
+    t.boolean  "follow_back",       default: false
+    t.integer  "follow_method",     default: 0
+    t.integer  "frequency",         default: 0
     t.integer  "bot_id"
     t.integer  "twitter_client_id"
-    t.datetime "created_at",                     null: false
-    t.datetime "updated_at",                     null: false
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
   end
 
   create_table "twitter_clients", force: :cascade do |t|

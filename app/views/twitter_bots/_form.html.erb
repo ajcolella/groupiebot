@@ -1,0 +1,45 @@
+<%= form_for(@twitter_bot) do |f| %>
+  <% if @twitter_bot.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@twitter_bot.errors.count, "error") %> prohibited this bot from being saved:</h2>
+
+      <ul>
+      <% @twitter_bot.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <br>
+  <div class="field">
+    <%= label_tag(:follow_back, "Automatically Follow Back") %><br>
+    <%= check_box_tag :follow_back, 0 %>
+  </div>
+  <br>
+  <div class="field">
+    <%= f.label :frequency %><br>
+    <div class="select">
+      <%= select(:twitter_bot, :frequency, [['Slow', 0], ['Medium', 1], ['Warp-Speed', 2]]) %>
+    </div>
+  </div>
+  <br>
+  <div class="field">
+    <%= f.label :follow_method %><br>
+    <div class="select">
+      <%= select(:twitter_bot, :follow_method, [['Follow by hashtag', 0]]) %>
+    </div>
+  </div>
+  <br>
+  <div class="field">
+    <%= f.label :tags %><br>
+    <div class="textarea">
+      <%= text_area(:twitter_bot, :tags, cols: 40, rows: 8, class: 'hashtags') %>
+    </div>
+  <br>
+
+  <br>
+  <div class="actions">
+    <%= f.submit 'Save Bot', :class => "btn btn-default" %>
+  </div>
+      
+<% end %>
