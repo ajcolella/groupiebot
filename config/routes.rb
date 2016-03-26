@@ -3,7 +3,6 @@ Rails.application.routes.draw do
   resources :twitter_bots, except: :show
 
   root to: 'visitors#index'
-  get 'products/:id', to: 'products#show', :as => :products
   devise_for :users
   resources :users
 
