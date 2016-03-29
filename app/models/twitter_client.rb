@@ -1,15 +1,25 @@
 class TwitterClient < ActiveRecord::Base
   belongs_to :twitter_bot
-  after_initialize :set_client, except: [:connected_to_twitter, :authorize_url, :validate_oauth_token]
 
   def update_bot_details(twitter_bot_id)
-    self.twitter_bot_id = twitter_bot_id
-    user = @client.user
-    self.twitter_id = user.id
-    self.username = user.screen_name
-    self.followers = @client.follower_ids.to_a
-    self.following = @client.friend_ids.to_a
-    self.save!
+    if twitter_bot_id.nil?
+      destroy_client
+    else
+      set_client
+      self.twitter_bot_id = twitter_bot_id
+      user = @client.user
+      self.twitter_id = user.id
+      self.username = user.screen_name
+      self.followers = @client.follower_ids.to_a
+      self.following = @client.friend_ids.to_a
+      self.save!
+    end
+  end
+
+  def destroy_client
+    self.destroy
+    p self.id, 'Twitter Client Orphaned and Destroyed'
+    redirect_to(bots_path, :notice => "Unable to establish connection with Twitter. Please reconnect.")
   end
 
   def connected_to_twitter
@@ -74,11 +84,12 @@ class TwitterClient < ActiveRecord::Base
 
   # TODO private?
   def set_client
+    p @client, 'Fetching twitter client'
     @client ||= Twitter::REST::Client.new do |config|
       config.consumer_key = Rails.application.secrets.twitter_key
       config.consumer_secret = Rails.application.secrets.twitter_secret
-      config.oauth_token = self.twitter_oauth_token
-      config.oauth_token_secret = self.twitter_oauth_token_secret
+      config.access_token = self.twitter_oauth_token
+      config.access_token_secret = self.twitter_oauth_token_secret
     end
   end
 end

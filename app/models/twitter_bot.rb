@@ -16,7 +16,6 @@ class TwitterBot < ActiveRecord::Base
     @twitter_client.following.length
   end
   
-  # def tag_array(tag_string)
   # **Bot Methods**
   # The amount of people that can be followed before hitting the max followers limit
   def number_to_follow

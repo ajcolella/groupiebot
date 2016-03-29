@@ -30,31 +30,35 @@
   <tbody>
     <% @bots.each do |bot| %>
       <tr>
-        <td><%= bot.platform %></td>
-        <td><%= bot.username %></td>
-        <td><%= bot.follower_count %></td>
-        <td><%= bot.twitter_bot.number_to_follow %></td>
-        <td><%= bot.time_left %></td>
-        <td><%= bot.status %></td>
-        <% if bot.platform == 'twitter' %>
+        <% if bot.twitter_bot.twitter_client.nil? %>
+          <td>Please Reauthenticate your <%= bot.platform %> bot!</td>
+        <% else %>
+          <td><%= bot.platform %></td>
+          <td><%= bot.username %></td>
+          <td><%= bot.follower_count %></td>
+          <td><%= bot.following_count %></td>
+          <td><%= bot.time_left %></td>
+          <td><%= bot.status %></td>
+          <% if bot.platform == 'twitter' %>
+            <td>
+              <%= link_to edit_twitter_bot_path(bot.twitter_bot), method: :get do %>
+                <%= fa_icon 'edit' %>
+              <% end %>
+            </td>
+          <% elsif bot.platform == 'instagram' %>
+            <td>
+              CHANGE ME TO INSTA
+              <%= link_to edit_twitter_bot_path(bot.twitter_bot), method: :get do %>
+                <%= fa_icon 'edit' %>
+              <% end %>
+            </td>
+          <% end %>
           <td>
-            <%= link_to edit_twitter_bot_path(bot.twitter_bot), method: :get do %>
-              <%= fa_icon 'edit' %>
-            <% end %>
-          </td>
-        <% elsif bot.platform == 'instagram' %>
-          <td>
-            CHANGE ME TO INSTA
-            <%= link_to edit_twitter_bot_path(bot.twitter_bot), method: :get do %>
-              <%= fa_icon 'edit' %>
+            <%= link_to edit_bot_path(bot), method: :get, data: { confirm: 'Are you sure?' } do %>
+              <%= fa_icon 'trash' %>
             <% end %>
           </td>
         <% end %>
-        <td>
-          <%= link_to edit_bot_path(bot), method: :get, data: { confirm: 'Are you sure?' } do %>
-            <%= fa_icon 'trash' %>
-          <% end %>
-        </td>
       </tr>
     <% end %>
   </tbody>
