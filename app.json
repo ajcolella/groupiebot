@@ -2,19 +2,15 @@
   "name": "Groupiebot",
   "description": "BOTS 4 BANDS",
   "logo": "https://avatars3.githubusercontent.com/u/788200",
-  "repository": "https://github.com/RailsApps/rails-signup-download",
+  "repository": "https://github.com/ajcolella/groupiebot",
   "keywords": [
-    "Rails Composer",
-    "RailsApps",
-    "starter",
-    "RSpec",
-    "Bootstrap",
-    "authentication",
-    "Devise",
-    "authorization",
-    "roles",
-    "Ruby",
-    "Rails"
+    "twitter",
+    "instagram",
+    "automation",
+    "autoliker",
+    "autopost",
+    "twitter bot",
+    "instagram bot"
   ],
   "scripts": {"postdeploy": "bundle exec rake db:migrate; bundle exec rake db:seed"},
   "env": {
@@ -40,7 +36,7 @@
     },
     "DOMAIN_NAME": {
       "description": "Required for sending mail. Give an app name or use a custom domain.",
-      "value": "myapp.herokuapp.com",
+      "value": "juiceboxermedia",
       "required": false
     },
     "MAILCHIMP_LIST_ID": {

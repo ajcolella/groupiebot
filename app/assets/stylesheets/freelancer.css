@@ -317,6 +317,10 @@ section.success a.active {
 }
 /* '::not' Causes rspec failure */
 /*.floating-label-form-group::not(:first-child) {
+=======
+
+.floating-label-form-group:not(:first-child) {
+>>>>>>> update breaking css
     padding-left: 14px;
     border-left: 1px solid #eee;
 }
