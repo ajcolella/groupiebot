@@ -9,7 +9,8 @@ gem 'jbuilder', '~> 2.0'
 gem 'stripe'
 gem 'oauth'
 gem 'twitter'
-gem "font-awesome-rails"
+gem 'font-awesome-rails'
+gem 'resque', '>= 1.22.0'
 
 group :development, :test do
   gem 'byebug'

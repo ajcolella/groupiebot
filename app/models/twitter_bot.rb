@@ -2,7 +2,6 @@ class TwitterBot < ActiveRecord::Base
   belongs_to :bot
   has_one :twitter_client
   after_initialize :set_client
-  # serialize :tags, Array
 
   def username
     @twitter_client.username
