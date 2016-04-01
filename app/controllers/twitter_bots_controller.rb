@@ -13,6 +13,10 @@ class TwitterBotsController < ApplicationController
   def show
   end
 
+  def queue_resque
+    Resque.enqueue(TwitterWorker)
+    render :show
+  end
   # GET /bots/new
   def new
   end

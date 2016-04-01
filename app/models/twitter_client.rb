@@ -82,7 +82,6 @@ class TwitterClient < ActiveRecord::Base
     self.save!
   end
 
-  # TODO private?
   def set_client
     p @client, 'Fetching twitter client'
     @client ||= Twitter::REST::Client.new do |config|

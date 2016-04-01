@@ -5,6 +5,9 @@
     <p><%= link_to 'User count:', users_path %> <%= User.count %></p>
   <% else %>
     <h3>Welcome to GROUPIE HEAVEN</h3>
+    <%= button_to queue_resque_path, method: :get, class: "btn btn-default" do %>
+      <%= fa_icon 'instagram' %> New Instagram Bot
+    <% end %>
   <% end %>
 <% else %>
   <h3>Sign up join us in GROUPIE HEAVEN</h3>

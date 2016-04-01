@@ -1,4 +1,0 @@
-module TwitterJob
-  def 
-
-end
