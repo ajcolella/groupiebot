@@ -1,6 +1,21 @@
 class TwitterClient < ActiveRecord::Base
   belongs_to :twitter_bot
 
+  def rate_limits(type = '')
+    
+    p 'check rate limits here'
+  end
+
+  def post(message)
+    begin
+      client.update(message)
+      return true
+    rescue Exception => e
+      self.errors.add(:oauth_token, "Unable to send to twitter: #{e.to_s}")
+      return false
+    end
+  end
+
   def update_bot_details(twitter_bot_id)
     if twitter_bot_id.nil?
       destroy_client
@@ -29,16 +44,6 @@ class TwitterClient < ActiveRecord::Base
       self.twitter_oauth_token_verifier.nil? && 
       twitter_oauth_authorize_url.nil?
     )
-  end
-
-  def post(message)
-    begin
-      client.update(message)
-      return true
-    rescue Exception => e
-      self.errors.add(:oauth_token, "Unable to send to twitter: #{e.to_s}")
-      return false
-    end
   end
 
   def authorize_url(callback_url = '')

@@ -1,4 +1,5 @@
 class TwitterBotsController < ApplicationController
+  include TwitterWorker
   before_action :set_bot, only: [:show, :edit, :update, :destroy]
   before_action :format_params, only: [:create, :update]
   before_action :unformat_params, only: [:new, :edit]
@@ -13,10 +14,6 @@ class TwitterBotsController < ApplicationController
   def show
   end
 
-  def queue_resque
-    Resque.enqueue(TwitterWorker)
-    render :show
-  end
   # GET /bots/new
   def new
   end

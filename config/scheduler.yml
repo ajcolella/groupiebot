@@ -1,0 +1,7 @@
+Scheduler:
+  description: 'Run once per hour and queue all jobs'
+  queue: master
+  class: "Scheduler"
+  every:
+    - '1m'
+    - :first_in: '10s'

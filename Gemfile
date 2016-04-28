@@ -11,6 +11,7 @@ gem 'oauth'
 gem 'twitter'
 gem 'font-awesome-rails'
 gem 'resque', '>= 1.22.0'
+gem 'resque-scheduler'
 
 group :development, :test do
   gem 'byebug'
@@ -25,7 +26,6 @@ gem 'devise'
 gem 'gibbon'
 gem 'high_voltage'
 gem 'pg'
-gem 'sucker_punch'
 gem 'unicorn'
 gem 'unicorn-rails'
 

@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   devise_for :users
   resources :users
 
-  get 'queue_resque', to: 'twitter_bots#queue_resque'
+  get 'queue_resque', to: 'visitors#queue_resque'
   post 'bots/connect_to_twitter', to: 'twitter_client#new', as: :connect_to_twitter
   get '/callback/twitter/', to: "twitter_client#callback", as: :twitter_callback
 end
