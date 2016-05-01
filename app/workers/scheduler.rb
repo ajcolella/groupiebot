@@ -6,17 +6,11 @@ module Scheduler
 
   def self.perform
     # Retreive active bots from db
-    p 'Here'
-    bots = Bot.where(platform: :twitter, status: 1)
-    # Retrieve each bot client
-    p 
+    bots = Bot.where(status: 1)
     bots.each do |bot|
-      p "Scheduler running for bot id: #{bot.id}"
-      twitter_bot = bot.twitter_bot
-      client = twitter_bot.twitter_client.set_client
-      client.rate_limits
-      # Schedule Follow, Unfollow, Like, Comment based on rate limit
-      Resque.enqueue(TwitterWorker)
+      worker = bot.platform.capitalize + "Worker"
+      p "Queued #{worker} bot_id: #{bot.id}"
+      Resque.enqueue(eval("#{worker}"), bot.id)
     end
   end
     

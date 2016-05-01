@@ -1,9 +1,17 @@
 class TwitterClient < ActiveRecord::Base
+  # The twitter client is responsible for all actions using the twitter api
+  # This includes connecting to the api and storing relevant twitter info
   belongs_to :twitter_bot
+  before_filter :set_client, only: [:rate_limits]
 
-  def rate_limits(type = '')
-    
-    p 'check rate limits here'
+  #  ****** Twitter API Methods ******
+
+  def rate_limits
+    begin
+      @client.get('/1.1/application/rate_limit_status.json')
+    rescue Exception => e
+      self.errors.add(:oauth_token, "Unable to send to twitter: #{e.to_s}")
+    end
   end
 
   def post(message)
@@ -15,6 +23,31 @@ class TwitterClient < ActiveRecord::Base
       return false
     end
   end
+
+  def unfollow
+    # Find all users that were followed 4 days ago
+    all_followed_users = User.where('followed_at < ?',  DateTime.now - 4)
+    @apps.each do |app|
+      begin
+        # Users followed per app
+        users = all_followed_users.where(follow_for_app: app[:name]).map(&:twitter_id)
+        # All users that are not following back
+        all_users_not_following = app[:client].friend_ids.collect.to_a - app[:client].follower_ids.collect.to_a
+        # Only unfollow users that were followed via the app
+        users_to_unfollow = users.find_all { |user| all_users_not_following.include?(user) }.take(15)
+        # Unfollow. Don't attempt to unfollow more that the rate limit (15)
+        app[:client].unfollow(users_to_unfollow)
+        p "**** Unfollowing for #{app[:name]} --> #{users_to_unfollow}"
+        if !(users_following_back = users - users_to_unfollow).nil?
+          User.where(twitter_id: users_following_back, following_back: nil).update_all(following_back: true) 
+        end
+      rescue
+        puts app[:name], 'Unfollow Error, Breaking'
+      end
+    end
+  end
+
+  #  ******* TwitterClient Object Methods ******
 
   def update_bot_details(twitter_bot_id)
     if twitter_bot_id.nil?
@@ -45,6 +78,8 @@ class TwitterClient < ActiveRecord::Base
       twitter_oauth_authorize_url.nil?
     )
   end
+
+  # ****** Twitter Auth Methods ******
 
   def authorize_url(callback_url = '')
     if self.twitter_oauth_authorize_url.blank?
