@@ -3,5 +3,5 @@ Scheduler:
   queue: master
   class: "Scheduler"
   every:
-    - '3m'
-    - :first_in: '10s'
+    - '901s'
+    - :first_in: '20s'

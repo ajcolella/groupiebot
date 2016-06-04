@@ -16,7 +16,11 @@ class Bot < ActiveRecord::Base
     @child_bot.following_count
   end
 
-  def update_bot_details
+  def friends_count
+    @child_bot.friends_count
+  end
+
+  def update_child_bot_details
     if !@child_client.nil?
       @child_client.update_bot_details(@child_bot.id)
     end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160428180818) do
+ActiveRecord::Schema.define(version: 20160602183916) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -46,15 +46,37 @@ ActiveRecord::Schema.define(version: 20160428180818) do
     t.string   "twitter_oauth_token_verifier"
     t.text     "twitter_oauth_authorize_url"
     t.boolean  "connected"
-    t.datetime "created_at",                                          null: false
-    t.datetime "updated_at",                                          null: false
+    t.datetime "created_at",                             null: false
+    t.datetime "updated_at",                             null: false
     t.integer  "twitter_bot_id"
     t.string   "username"
-    t.text     "followers",                              default: [],              array: true
-    t.text     "following",                              default: [],              array: true
   end
 
   add_index "twitter_clients", ["twitter_bot_id"], name: "index_twitter_clients_on_twitter_bot_id", using: :btree
+
+  create_table "twitter_users", force: :cascade do |t|
+    t.integer  "twitter_id",                   limit: 8
+    t.string   "tag_followed"
+    t.string   "twitter_client"
+    t.integer  "follow_status",                          default: 0
+    t.datetime "followed_at"
+    t.string   "username"
+    t.string   "name"
+    t.string   "url"
+    t.string   "followers_count"
+    t.string   "location"
+    t.datetime "created_at",                                         null: false
+    t.string   "description"
+    t.string   "lang"
+    t.string   "time_zone"
+    t.string   "verified"
+    t.string   "profile_image_url"
+    t.string   "website"
+    t.string   "statuses_count"
+    t.string   "profile_background_image_url"
+    t.string   "profile_banner_url"
+    t.datetime "updated_at",                                         null: false
+  end
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false

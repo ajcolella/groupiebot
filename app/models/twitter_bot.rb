@@ -10,11 +10,15 @@ class TwitterBot < ActiveRecord::Base
   end
 
   def follower_count
-    @twitter_client.followers.length
+    @twitter_client.follower_count
   end
 
   def following_count
-    @twitter_client.following.length
+    @twitter_client.following_count
+  end
+
+  def friends_count
+    @twitter_client.friends_count
   end
 
   private

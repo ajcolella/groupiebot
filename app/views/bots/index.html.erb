@@ -20,6 +20,7 @@
       <th>Username</th>
       <th>Followers</th>
       <th>Following</th>
+      <th>Friends</th>
       <th>Time Left</th>
       <th>Status</th>
       <th class="edit"><%= fa_icon 'edit' %></th>
@@ -37,6 +38,7 @@
           <td><%= bot.username %></td>
           <td><%= bot.follower_count %></td>
           <td><%= bot.following_count %></td>
+          <td><%= bot.friends_count %></td>
           <td><%= bot.time_left %></td>
           <td><%= bot.status %></td>
           <% if bot.platform == 'twitter' %>

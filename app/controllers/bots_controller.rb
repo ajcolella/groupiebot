@@ -6,7 +6,7 @@ class BotsController < ApplicationController
   def index
     # Check rate limits here
     @bots = Bot.where(user_id: current_user).order(created_at: :desc)
-    @bots.each { |b| b.update_bot_details }
+    # @bots.each { |b| b.update_child_bot_details } Do this on a worker
   end
 
   # GET /bots/1
