@@ -22,7 +22,8 @@ class Bot < ActiveRecord::Base
 
   def update_child_bot_details
     if !@child_client.nil?
-      @child_client.update_bot_details(@child_bot.id)
+      # Unessecary on page load
+      # @child_client.update_bot_details(@child_bot.id)
     end
   end
 

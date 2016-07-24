@@ -20,6 +20,8 @@ class BotsController < ApplicationController
 
   # GET /bots/1/edit
   def edit
+    @bot.update(status: bot_params.status)
+    redirect_to bots_path
   end
 
   # POST /bots
@@ -41,11 +43,13 @@ class BotsController < ApplicationController
 
   # PATCH/PUT /bots/1
   # PATCH/PUT /bots/1.json
+  # Only updates status
   def update
     respond_to do |format|
-      if @bot.update(bot_params)
-        format.html { redirect_to @bot, notice: 'Bot was successfully updated.' }
-        format.json { render :show, status: :ok, location: @bot }
+      status = @bot.status == 'inactive' ? 1 : 0
+      if @bot.update(bot_params.merge(status: status))
+        format.html { redirect_to bots_path, notice: 'Bot was successfully updated.' }
+        format.json { render :show, status: :ok, location: bots_path }
       else
         format.html { render :edit }
         format.json { render json: @bot.errors, status: :unprocessable_entity }
@@ -57,6 +61,7 @@ class BotsController < ApplicationController
   # DELETE /bots/1.json
   def destroy
     @bot.destroy
+    @child_bot.twitter_client.destroy
     @child_bot.destroy
     respond_to do |format|
       format.html { redirect_to bots_url, notice: 'Bot was successfully destroyed.' }
@@ -73,6 +78,6 @@ class BotsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def bot_params
-      params.require(:bot).permit(:status, :platform).merge(user_id: current_user.id)
+      params.permit(:bot, :status, :platform).merge(user_id: current_user.id)
     end
 end

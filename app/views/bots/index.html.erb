@@ -16,13 +16,14 @@
 <table id="bots">
   <thead>
     <tr>
-      <th>Platform</th>
       <th>Username</th>
+      <th>Status</th>
+      <th>Platform</th>
       <th>Followers</th>
       <th>Following</th>
       <th>Friends</th>
       <th>Time Left</th>
-      <th>Status</th>
+      <th>Activate</th>
       <th class="edit"><%= fa_icon 'edit' %></th>
       <th class="trash"><%= fa_icon 'trash' %></th>
     </tr>
@@ -34,13 +35,32 @@
         <% if bot.twitter_bot.twitter_client.nil? %>
           <td>Please Reauthenticate your <%= bot.platform %> bot!</td>
         <% else %>
-          <td><%= bot.platform %></td>
           <td><%= bot.username %></td>
+          <td>
+            <% if bot.status == 'active' %>
+              <i class="fa fa-circle active" aria-hidden="true"></i>
+            <% elsif bot.status == 'inactive' %>
+              <i class="fa fa-circle inactive" aria-hidden="true"></i>
+            <% else %>
+              <i class="fa fa-circle warning" aria-hidden="true"></i>
+            <% end %>
+          </td>
+          <td><%= bot.platform %></td>
           <td><%= bot.follower_count %></td>
           <td><%= bot.following_count %></td>
           <td><%= bot.friends_count %></td>
           <td><%= bot.time_left %></td>
-          <td><%= bot.status %></td>
+          <td class="play">
+            <% if bot.status == 'inactive' %>
+              <%= link_to bot_path(bot), method: :patch do %>
+                <%= fa_icon 'play' %>
+              <% end %>
+            <% else %>
+              <%= link_to bot_path(bot), method: :patch do %>
+                <%= fa_icon 'pause' %>
+              <% end %>
+            <% end %>
+          </td>
           <% if bot.platform == 'twitter' %>
             <td>
               <%= link_to edit_twitter_bot_path(bot.twitter_bot), method: :get do %>
@@ -56,7 +76,7 @@
             </td>
           <% end %>
           <td>
-            <%= link_to edit_bot_path(bot), method: :get, data: { confirm: 'Are you sure?' } do %>
+            <%= link_to bot_path(bot), method: :delete, data: { confirm: 'Are you sure?' } do %>
               <%= fa_icon 'trash' %>
             <% end %>
           </td>

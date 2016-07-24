@@ -14,6 +14,17 @@ i.fa {
   vertical-align: sub;
   text-align: center;
 }
+i.fa-circle {
+  &.active {
+    color: green;
+  }
+  &.inactive {
+    color: red;
+  }
+  &.warning {
+    color: yellow;
+  }
+}
 
 // Bots Table
 #bots {

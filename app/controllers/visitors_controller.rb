@@ -1,7 +1,7 @@
 class VisitorsController < ApplicationController
-  def queue_resque
-    byebug
-    Resque.enqueue(TwitterWorker)
-    redirect_to root_path
-  end
+  # Test button
+  # def queue_resque
+  #   Resque.enqueue(TwitterWorker)
+  #   redirect_to root_path
+  # end
 end

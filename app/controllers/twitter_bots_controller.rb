@@ -30,7 +30,7 @@ class TwitterBotsController < ApplicationController
     respond_to do |format|
       if @twitter_bot.save
         format.html { redirect_to bots_path, notice: 'Bot was successfully created.' }
-        format.json { render :show, status: :created, location: @twitter_bot }
+        format.json { redirect_to bots_path, status: :created, location: @twitter_bot }
       else
         format.html { render :new }
         format.json { render json: @twitter_bot.errors, status: :unprocessable_entity }
@@ -43,8 +43,8 @@ class TwitterBotsController < ApplicationController
   def update
     respond_to do |format|
       if @twitter_bot.update(bot_params)
-        format.html { redirect_to root_path, notice: 'Bot was successfully updated.' }
-        format.json { render :show, status: :ok, location: @twitter_bot }
+        format.html { redirect_to bots_path, notice: 'Bot was successfully updated.' }
+        format.json { redirect_to bots_path, status: :ok, location: @twitter_bot }
       else
         format.html { render :edit }
         format.json { render json: @twitter_bot.errors, status: :unprocessable_entity }
@@ -57,17 +57,17 @@ class TwitterBotsController < ApplicationController
   def destroy
     @twitter_bot.destroy
     respond_to do |format|
-      format.html { redirect_to bots_url, notice: 'Bot was successfully destroyed.' }
+      format.html { redirect_to bots_path, notice: 'Bot was successfully destroyed.' }
       format.json { head :no_content }
     end
   end
   private
     def unformat_params
-      @twitter_bot.tags = @twitter_bot.tags.join(',')
+      @twitter_bot.tags = @twitter_bot.tags.map { |tag| tag.strip }.join(', ')
     end
 
     def format_params
-      params[:twitter_bot][:tags] = params[:twitter_bot][:tags].split(',')
+      params[:twitter_bot][:tags] = params[:twitter_bot][:tags].split(',').map { |tag| tag.strip }
     end
 
     # Use callbacks to share common setup or constraints between actions.

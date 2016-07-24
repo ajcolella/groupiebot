@@ -12,8 +12,16 @@
   <% end %>
   <br>
   <div class="field">
-    <%= label_tag(:follow_back, "Automatically Follow Back") %><br>
+    <%= label_tag(:follow, "Follow new Twitter users based on tweet text") %><br>
+    <%= check_box_tag :follow, 0 %>
+  </div>
+  <div class="field">
+    <%= label_tag(:follow_back, "Follow Back") %><br>
     <%= check_box_tag :follow_back, 0 %>
+  </div>
+  <div class="field">
+    <%= label_tag(:unfollow, "Unfollow Twitter Users that aren't following you") %><br>
+    <%= check_box_tag :unfollow, 0 %>
   </div>
   <br>
   <div class="field">
@@ -23,12 +31,12 @@
     </div>
   </div>
   <br>
-  <div class="field">
+<!--   <div class="field">
     <%= f.label :follow_method %><br>
     <div class="select">
       <%= select(:twitter_bot, :follow_method, [['Follow by hashtag', 0]]) %>
     </div>
-  </div>
+  </div> -->
   <br>
   <div class="field">
     <%= f.label :tags %><br>

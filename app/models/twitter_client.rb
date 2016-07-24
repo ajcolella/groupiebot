@@ -6,21 +6,24 @@ class TwitterClient < ActiveRecord::Base
   #  ****** Twitter API Methods ******
 
   def rate_limits
-    begin
-      limits = @client.get('/1.1/application/rate_limit_status.json')
-      @rate_limits_remaining = limits[:resources][:application][:"/application/rate_limit_status"][:remaining]
-      limits
-    rescue Exception => e
-      self.errors.add(:oauth_token, "Unable to send to twitter: #{e.to_s}")
-    end
+    limits = 
+      begin
+        @client.get('/1.1/application/rate_limit_status.json')
+      rescue Exception => e
+        self.errors.add(:oauth_token, "Rate Limits Error: #{e.to_s}")
+      end
+  end
+
+  def rate_limits_remaining
+    self.rate_limits[:resources][:application][:"/application/rate_limit_status"][:remaining]
   end
 
   def following_lookups_remaining
-    self.rate_limits[:resources][:friends][:"/friends/ids"][:remaining]
+    self.rate_limits[:resources][:friends][:"/friends/list"][:remaining]
   end
 
   def follower_lookups_remaining
-    self.rate_limits[:resources][:friends][:"/friends/ids"][:remaining]
+    self.rate_limits[:resources][:followers][:"/followers/list"][:remaining]
   end
 
   def user_lookups_remaining
@@ -34,7 +37,7 @@ class TwitterClient < ActiveRecord::Base
   # The amount of people that can be followed before hitting the max followers limit
   def number_to_follow(user_limit)
     # 20% more followers or 2000 as estimated follow limit
-    max_followers = [(follower_count / 20).floor + follower_count, 5000].max
+    max_followers = [(follower_count / 20).floor + follower_count, 10000].max
     # Prevent negative #'s, Max at 12 follows at a time for rate limiting
     max_following_limit = [0, max_followers - following_count].max
     # Twitter limits 1000 follows per day: 10 follows per 15 minutes = 960
@@ -60,22 +63,25 @@ class TwitterClient < ActiveRecord::Base
           twitter_id: user_ids_to_unfollow, 
           twitter_client: self.id,
           follow_status: 1
-        ).update!(follow_status: 0)
+        ).update_all(follow_status: 0)
         p "**** Unfollowing for #{self.username} --> #{user_ids_to_unfollow}"
       end
-      p "response", res
-      res
-    rescue
-      puts "Unfollow Error for #{self.username}"
+    rescue Exception => e
+      puts "Unfollow Error for #{self.username}", "#{e.to_s}"
     end
   end
 
+  # Find tweets with specific words. Reverse to follow oldest tweet first.
   def follow_by_tag(num_to_follow, tag, tweets = [])
-    # Find tweets with specific words. Reverse to follow oldest tweet first.
-    return if self.tweet_searches_remaining < 10 # Break if recursion hits rate limit
-    tweets = @client.search(tag, result_type: "recent", count: 100) if tweets.length == 0
+    # Break if recursion hits rate limit
+    if (sr = self.tweet_searches_remaining) < 10 || (fl = self.follower_lookups_remaining) < 2
+      p "Returning hitting rate limit #{sr}, #{fl}"
+      return
+    end
+    tweets = @client.search(tag, count: 100).to_a.reverse! if tweets.count == 0
     num_to_retry = 0
-    tweets.take(num_to_follow).each do |tweet|
+    popped_tweets = tweets.pop(num_to_follow)
+    popped_tweets.each do |tweet|
       remote_user = tweet.user
       screen_name = remote_user.screen_name
       twitter_id = remote_user.id
@@ -84,20 +90,22 @@ class TwitterClient < ActiveRecord::Base
       if local_user.new_record? && screen_name != self.username
         local_user.tag_followed = tag
         local_user.followed_at = DateTime.now
-        res = @client.follow(screen_name)
-        # Only save and update if follow was successful TODO check for errors
-        unless res.length == 0
+        begin
+          @client.follow(screen_name)
+          p "#{screen_name} followed"
           local_user.save! 
-          update_twitter_user(local_user, remote_user, 1) # TODO only one db call
+          update_twitter_user(local_user, remote_user, 1)
           p "**** Following for #{self.username} --> #{screen_name}: #{tweet.text} #{tweet.created_at}"
+        rescue Exception => e
+          p "Error following #{screen_name} for #{self.username} - #{e.to_s}"
+          return
         end
       else
         num_to_retry += 1
       end
     end
     # If user has already been followed, attempt to follow another user by retrieving more tweets
-    p num_to_retry, tweets[num_to_retry..tweets.length], '**********'
-    if num_to_retry > 0 && !(tweets_to_retry = tweets[num_to_retry..tweets.length]).nil?
+    if num_to_retry > 0 && !(tweets_to_retry = tweets[num_to_retry..tweets.count]).nil?
       p "Follow more people for #{self.username}: #{num_to_retry}"
       follow_by_tag(num_to_retry, tag, tweets_to_retry)
     end
@@ -107,7 +115,7 @@ class TwitterClient < ActiveRecord::Base
   def follow_back(num_to_follow)
     # Find all users that followed, but are not friends
     user_ids_to_follow = self.followers.map(&:twitter_id).take(num_to_follow)
-    if !user_ids_to_follow.nil?
+    if user_ids_to_follow.length > 0
       begin
         # Users followed per client and set follow status to friend
         res = @client.follow(user_ids_to_follow)
@@ -115,12 +123,12 @@ class TwitterClient < ActiveRecord::Base
           TwitterUser.where(
             twitter_id: user_ids_to_follow, 
             twitter_client: self.id
-          ).update!(follow_status: 4)
+          ).update_all(follow_status: 4)
         end
         p "**** Following back for #{self.username} --> #{user_ids_to_follow}"
         res
-      rescue
-        puts "Follow Back Error for #{self.username}, #{res}"
+      rescue Exception => e
+        puts "Follow Back Error for #{self.username}, #{res}", "#{e.to_s}"
       end
     else
       p "**** Following back for #{self.username} --> No users to follow back"
@@ -144,76 +152,116 @@ class TwitterClient < ActiveRecord::Base
         self.twitter_id = user.id
         self.username = user.screen_name
         self.save!
-        update_followers
-        update_following
+        Resque.enqueue(TwitterUpdateFollowingWorker, self.twitter_bot.id)
+        Resque.enqueue(TwitterUpdateFollowersWorker, self.twitter_bot.id)
       end
-    rescue
-      puts self.id, "Unable to initialize connection with Twitter."
+    rescue Exception => e
+      puts self.id, "Unable to initialize connection with Twitter.", "#{e.to_s}"
     end
   end
 
   # Update anything that may have changed since the last run of the TwitterWorker
   def update_client_details
-    begin
-      user = @client.user
-      self.username = user.screen_name
-      self.save!
-      update_followers
-      update_following
-    rescue
-      puts twitter_client.id, "Unable to update Twitter account details."
-    end
+    user = @client.user
+    self.username = user.screen_name
+    self.save!
   end
 
-  def update_followers
-    # TODO Move to a worker, make more efficient, and remove n+1 probs ie two methods, update full and update recent
-    # Twitter users that the client is following
-    if self.following_lookups_remaining
-      remote_follower_ids = []
-      @client.friend_ids(self.username).each_slice(100).with_index do |slice, i|
-        @client.users(slice).each do |remote_user|
+  # Twitter users that the client is following
+  def update_following(cursor, remote_following_ids)
+    num_following_updated = 0
+    while (cursor != 0) do
+      begin
+        remote_following = @client.friends(self.username, {cursor: cursor, count: 200})
+        remote_following.each do |remote_user|
           local_user = TwitterUser.where(
             twitter_id: remote_user.id, 
             twitter_client: self.id,
-            follow_status: 3
-        ).first_or_create
-          remote_follower_ids << remote_user.id
+          ).first_or_create
+          # p "Follower #{remote_user.screen_name} updated"
+          remote_following_ids << remote_user.id
           update_twitter_user(local_user, remote_user, 3)
+          num_following_updated += 1
         end
+        users_no_longer_following = self.whitelist.map(&:twitter_id) - remote_following_ids
+        p "Users no longer Following #{self.username}: #{users_no_longer_following}"
+        TwitterUser.where(twitter_id: users_no_longer_following, 
+          twitter_client: self.id).update_all(follow_status: 0)
+        cursor = remote_following.send(:next_cursor)
+        # End and update twitter bot so it runs in 24hrs
+        p "following cursor #{cursor}"
+        # if cursor == 0
+        #   self.twitter_bot.is_updating_following = false
+        #   self.twitter_bot.following_updated_at = DateTime.now
+        #   twitter_bot.save!
+        #   break
+        # end
+      rescue Exception => e
+        if remote_following && (c = remote_following.send(:next_cursor))
+          cursor = c
+        end
+        p "Number of following updated for #{self.username}: #{num_following_updated}"
+        p "#{e}, Enqueueing Twitter Update Following worker for #{self.username}"
+        Resque.enqueue_at(15.minutes.from_now, TwitterUpdateFollowingWorker, twitter_bot_id, cursor, remote_following_ids)
+        cursor = 0
+        break
       end
-      # follow_status of Following (3) are whitelisted users
-      # whitelist_ids = self.following.map(&:twitter_id) - self.pending_followers.map(&:twitter_id)
-      # users_no_longer_following = whitelist_ids - remote_follower_ids
-      # p "Users no longer Following #{self.username}: #{users_no_longer_following}"
-      # TwitterUser.where(twitter_id: users_no_longer_following, 
-      #   twitter_client: self.id).update!(follow_status: 0)
+    end
+    if self.following.select { |user| user.updated_at > DateTime.now - 1 }.length == 0
+      p "All followers updated for #{self.username}"
+      self.twitter_bot.is_updating_following = false
+      self.twitter_bot.following_updated_at = DateTime.now
+      twitter_bot.save!
     end
   end
 
-  def update_following
-    # Twitter users that are following the client
-    @client.follower_ids(self.username).each_slice(100).with_index do |slice, i|
-      # TODO check rate limits
-      @client.users(slice).each do |remote_user|
-        local_user = TwitterUser.where(
-          twitter_id: remote_user.id, 
-          twitter_client: self.id
-      ).first_or_initialize
-        if local_user.new_record? || local_user.follow_status == "inactive"
-          # If its a new follower status = follower
-          p "New User #{remote_user.screen_name}"
-          update_twitter_user(local_user, remote_user, 2)
-        else local_user.follow_status == "pending" || local_user.follow_status == "following"
-          # p "#{remote_user.screen_name} Followed Back"
-          # If the follower followed back status = friend
-          update_twitter_user(local_user, remote_user, 4)
+  # Twitter users that are following the client
+  def update_followers(cursor)
+    num_followers_updated = 0
+    while (cursor != 0) do
+      begin
+        remote_followers = @client.followers(self.username, {cursor: cursor, count: 200})
+        remote_followers.each do |remote_user|
+          local_user = TwitterUser.where(
+            twitter_id: remote_user.id, 
+            twitter_client: self.id
+          ).first_or_initialize
+          if local_user.new_record? || local_user.follow_status == "inactive"
+            # If its a new follower status = follower
+            p "New Follower #{remote_user.screen_name}"
+            update_twitter_user(local_user, remote_user, 2)
+          else local_user.follow_status == "pending" || local_user.follow_status == "following"
+            # If the follower followed back, status = friend
+            update_twitter_user(local_user, remote_user, 4) 
+          end
+          num_followers_updated += 1
         end
+        cursor = remote_followers.send(:next_cursor)
+        p "follower cursor #{cursor}"
+        break if num_followers_updated >= 2998
+      rescue Exception => e
+        p "#{e} for Update Followers #{self.username}"
       end
+    end
+    if self.followers.select { |user| user.updated_at > DateTime.now - 1 }.length == 0
+      # End and update twitter bot so it runs in 24hrs
+      p "All followers updated for #{self.username}"
+      self.twitter_bot.is_updating_followers = false
+      self.twitter_bot.followers_updated_at = DateTime.now
+      twitter_bot.save!
+    else
+      if remote_followers && (c = remote_followers.send(:next_cursor))
+        cursor = c
+      end
+      p "Number of followers updated for #{self.username}: #{num_followers_updated}, cursor #{cursor}"
+      p "Enqueueing Twitter Update Followers worker for #{self.username}"
+      Resque.enqueue_at(15.minutes.from_now, TwitterUpdateFollowersWorker, twitter_bot_id, cursor)
+      # cursor = 0 # Maybe unnecessary
     end
   end
 
   def update_twitter_user(local_user, remote_user, status)
-    local_user.update!(
+    local_user.update(
       username: remote_user.screen_name,
       name: remote_user.name,
       url: remote_user.url,
@@ -223,7 +271,6 @@ class TwitterClient < ActiveRecord::Base
       description: remote_user.description.gsub(/\n+/,' '),
       lang: remote_user.lang,
       time_zone: remote_user.time_zone,
-      # verified: remote_user.verified,
       profile_image_url: remote_user.profile_image_url,
       website: remote_user.website,
       statuses_count: remote_user.statuses_count,
@@ -244,25 +291,29 @@ class TwitterClient < ActiveRecord::Base
   end
 
   def followers
-    TwitterUser.where(twitter_client: self.id, follow_status: [2, 4])
+    TwitterUser.where(twitter_client: self.id, follow_status: 2)
   end
 
   def following
-    TwitterUser.where(twitter_client: self.id, follow_status: [1, 3, 4])
+    TwitterUser.where(twitter_client: self.id, follow_status: [1, 3])
   end
 
   def friends
     TwitterUser.where(twitter_client: self.id, follow_status: 4)
   end
 
+  def whitelist
+    TwitterUser.where(twitter_client: self.id, follow_status: 3, followed_at: nil)
+  end
+
   # TODO whitelist
 
   def follower_count
-    self.followers.length
+    self.followers.length + self.friends.length
   end
 
   def following_count
-    self.following.length
+    self.following.length + self.friends.length
   end
   
   def friends_count
@@ -313,7 +364,7 @@ class TwitterClient < ActiveRecord::Base
 
   # Cache client in order to reduce number of calls to Twitter API
   def set_client
-    p @client, 'Fetching twitter client'
+    p "Fetching twitter client #{@client}"
     @client ||= Twitter::REST::Client.new do |config|
       config.consumer_key = Rails.application.secrets.twitter_key
       config.consumer_secret = Rails.application.secrets.twitter_secret
