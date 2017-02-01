@@ -13,6 +13,7 @@
   </li>
 </ul>
 <br>
+<h3>Twitter Bots</h3>
 <table id="bots">
   <thead>
     <tr>
@@ -35,7 +36,7 @@
         <% if bot.twitter_bot.twitter_client.nil? %>
           <td>Please Reauthenticate your <%= bot.platform %> bot!</td>
         <% else %>
-          <td><%= bot.username %></td>
+          <td><%= bot.twitter_bot.twitter_client.username %></td>
           <td>
             <% if bot.status == 'active' %>
               <i class="fa fa-circle active" aria-hidden="true"></i>
@@ -46,9 +47,9 @@
             <% end %>
           </td>
           <td><%= bot.platform %></td>
-          <td><%= bot.follower_count %></td>
-          <td><%= bot.following_count %></td>
-          <td><%= bot.friends_count %></td>
+          <td><%= bot.twitter_bot.twitter_client.follower_count %></td>
+          <td><%= bot.twitter_bot.twitter_client.following_count %></td>
+          <td><%= bot.twitter_bot.twitter_client.friends_count %></td>
           <td><%= bot.time_left %></td>
           <td class="play">
             <% if bot.status == 'inactive' %>
@@ -61,20 +62,11 @@
               <% end %>
             <% end %>
           </td>
-          <% if bot.platform == 'twitter' %>
-            <td>
-              <%= link_to edit_twitter_bot_path(bot.twitter_bot), method: :get do %>
-                <%= fa_icon 'edit' %>
-              <% end %>
-            </td>
-          <% elsif bot.platform == 'instagram' %>
-            <td>
-              CHANGE ME TO INSTA
-              <%= link_to edit_twitter_bot_path(bot.twitter_bot), method: :get do %>
-                <%= fa_icon 'edit' %>
-              <% end %>
-            </td>
-          <% end %>
+          <td>
+            <%= link_to edit_twitter_bot_path(bot), method: :get do %>
+              <%= fa_icon 'edit' %>
+            <% end %>
+          </td>
           <td>
             <%= link_to bot_path(bot), method: :delete, data: { confirm: 'Are you sure?' } do %>
               <%= fa_icon 'trash' %>
@@ -83,5 +75,26 @@
         <% end %>
       </tr>
     <% end %>
+  </tbody>
+</table>
+
+<h3>Instagram Bots</h3>
+<table id="bots">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Status</th>
+      <th>Platform</th>
+      <th>Followers</th>
+      <th>Following</th>
+      <th>Friends</th>
+      <th>Time Left</th>
+      <th>Activate</th>
+      <th class="edit"><%= fa_icon 'edit' %></th>
+      <th class="trash"><%= fa_icon 'trash' %></th>
+    </tr>
+  </thead>
+
+  <tbody>
   </tbody>
 </table>

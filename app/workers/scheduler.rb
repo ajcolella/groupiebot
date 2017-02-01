@@ -9,7 +9,7 @@ module Scheduler
     bots = Bot.where(status: 1)
     bots.each do |bot|
       worker = bot.platform.capitalize + "Worker"
-      p "Queued #{worker} Bot# #{bot.id}"
+      p "Queued #{worker} Bot# #{bot.twitter_bot.twitter_client.username}"
       Resque.enqueue(eval("#{worker}"), bot.id)
 
       # Enqueue Twitter Update Followers Workers

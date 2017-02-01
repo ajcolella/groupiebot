@@ -54,20 +54,27 @@ class TwitterClient < ActiveRecord::Base
     # Find all users that were followed days_since_follow days ago
     user_ids_to_unfollow = self.pending_followers.
       where('followed_at < ?',  DateTime.now - days_since_follow
-    ).map(&:twitter_id).take(num_to_unfollow)
-    begin
-      # Users followed per client
-      res = @client.unfollow(user_ids_to_unfollow)
-      unless res.length == 0
-        TwitterUser.where(
-          twitter_id: user_ids_to_unfollow, 
-          twitter_client: self.id,
-          follow_status: 1
-        ).update_all(follow_status: 0)
-        p "**** Unfollowing for #{self.username} --> #{user_ids_to_unfollow}"
+    ).map(&:twitter_id).take(num_to_unfollow).map(&:to_i)
+    if user_ids_to_unfollow.length > 0
+      user_ids_to_unfollow.each do |user_id_to_unfollow|
+        begin
+          # Users followed per client
+          user = TwitterUser.where(
+            twitter_id: user_id_to_unfollow, 
+            twitter_client: self.id,
+            follow_status: 1
+          ).first
+          res = @client.unfollow(user_id_to_unfollow)
+          unless res.length == 0
+            user.update(follow_status: 0)
+            p "**** Unfollowing for #{self.username} --> #{user.username}"
+          end
+        rescue Exception => e
+          puts "Unfollow Error for #{self.username} -- #{e.to_s} - #{user.id}"
+          TwitterUser.delete(user.id) if e.to_s == 'Sorry, that page does not exist.'
+          next
+        end
       end
-    rescue Exception => e
-      puts "Unfollow Error for #{self.username}", "#{e.to_s}"
     end
   end
 
@@ -178,7 +185,7 @@ class TwitterClient < ActiveRecord::Base
             twitter_id: remote_user.id, 
             twitter_client: self.id,
           ).first_or_create
-          # p "Follower #{remote_user.screen_name} updated"
+          p "Follower #{remote_user.screen_name} updated"
           remote_following_ids << remote_user.id
           update_twitter_user(local_user, remote_user, 3)
           num_following_updated += 1
@@ -241,6 +248,7 @@ class TwitterClient < ActiveRecord::Base
         break if num_followers_updated >= 2998
       rescue Exception => e
         p "#{e} for Update Followers #{self.username}"
+        break
       end
     end
     if self.followers.select { |user| user.updated_at > DateTime.now - 1 }.length == 0

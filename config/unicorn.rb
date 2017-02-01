@@ -19,7 +19,7 @@ if Rails.env.development?
     server.close if server
   end
 
-  port = find_available_port
+  port = 65000
   puts "Remote debugger on port #{port}"
   Byebug.wait_connection = true
   Byebug.start_server('localhost', port)

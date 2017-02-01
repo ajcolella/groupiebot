@@ -16,7 +16,7 @@ module TwitterWorker
 
     p 'unfollowing'
     # Unfollow: number_to_unfollow, days_since_follow
-    client.unfollow(14, bot.days_since_follow)
+    client.unfollow(14, 1)#bot.days_since_follow)
     # Follow back users that have followed since
     if bot.follow_back
       p 'following back'
