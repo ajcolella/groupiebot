@@ -12,6 +12,9 @@ gem 'twitter'
 gem 'font-awesome-rails'
 gem 'resque', '>= 1.22.0'
 gem 'resque-scheduler'
+gem 'mechanize'
+gem 'nokogiri'
+gem 'restclient'
 
 group :development, :test do
   gem 'byebug'

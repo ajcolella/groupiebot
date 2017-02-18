@@ -20,7 +20,7 @@ module TwitterWorker
     # Follow back users that have followed since
     if bot.follow_back
       p 'following back'
-      users_followed_back = client.follow_back(number_to_follow)
+      # users_followed_back = client.follow_back(number_to_follow)
       # Reduce number of users to follow
       number_to_follow -= users_followed_back
     end
@@ -32,7 +32,7 @@ module TwitterWorker
     if !(tags = bot.tags).nil? && bot.follow_method == 0 
       tag = tags.sample
       # Follow/Like/Retweet
-      client.follow_by_tag(number_to_follow, tag)
+      # client.follow_by_tag(number_to_follow, tag)
     else
       p 'TODO Follow by user'
     end
